@@ -7,10 +7,8 @@ addons:
   sonarcloud:
     organization: "giskardb"
     token:
-      secure: $SONAR_TOKEN
-script:
-  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar -Dsonar.projectKey=GiskardB_springQrCodeApp
+      secure:
+        - echo "$SONAR_TOKEN"
 cache:
   directories:
     - '$HOME/.m2/repository'
@@ -24,8 +22,10 @@ jobs:
         # Show Maven version
         - mvn --version
 
+        - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=GiskardB_springQrCodeApp
+
         # Compile spring boot app
-        - mvn clean install
+        - mvn install
 
       name: "Compile spring app project on Travis Host"
 
