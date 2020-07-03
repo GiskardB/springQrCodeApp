@@ -99,7 +99,6 @@ public class QRCodeService implements InitializingBean {
             BufferedImage finalQrCode = qrImage;
             if (params.isQrCodeLogoEnabled()) {
                 finalQrCode = addLogo(params, qrImage);
-                ;
             }
 
             // Write final image as PNG to OutputStream
@@ -112,7 +111,7 @@ public class QRCodeService implements InitializingBean {
     }
 
     private Map<EncodeHintType, ?> buildHints(QrCodeBuilderParams params) {
-        Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>();
+        Map<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
         hints.put(EncodeHintType.MARGIN, params.getQrCodeMargin());
         return hints;
@@ -128,7 +127,7 @@ public class QRCodeService implements InitializingBean {
         // Write QR code to new image at position 0/0
         g.drawImage(qrImage, 0, 0, null);
 
-        Image scaledInstance = logoImage.getScaledInstance(params.getQrCodeLogoSize(), params.getQrCodeLogoSize(), BufferedImage.SCALE_SMOOTH);
+        Image scaledInstance = logoImage.getScaledInstance(params.getQrCodeLogoSize(), params.getQrCodeLogoSize(), Image.SCALE_SMOOTH);
         // Calculate the delta height and width between QR code and logo
         int deltaHeight = qrImage.getHeight() - scaledInstance.getHeight(null);
         int deltaWidth = qrImage.getWidth() - scaledInstance.getWidth(null);
