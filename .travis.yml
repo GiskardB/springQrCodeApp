@@ -3,7 +3,11 @@ jdk:
   - openjdk8
 services:
   - docker
-  -
+addons:
+  sonarcloud:
+    organization: "giskardb"
+    token:
+      secure: "$SONAR_TOKEN"
 jobs:
   include:
     - script:
@@ -15,6 +19,9 @@ jobs:
 
         # Compile spring boot app
         - mvn clean install
+
+        # Sonar
+        - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=GiskardB_springQrCodeApp
 
       name: "Compile spring app project on Travis Host"
 
