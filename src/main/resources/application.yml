@@ -1,0 +1,14 @@
+qrcode:
+  logo:
+    enabled: true
+    path: "classpath:logo.jpg"
+    size: 50
+    transparency: 1.0f
+  margin: 1
+  size: 300
+  rgbColorBackground: "#FFFFFF"
+  rgbColorForeground: "#000000"
+logging:
+  level:
+    org.springframework.web: INFO
+    
