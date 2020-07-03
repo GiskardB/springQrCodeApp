@@ -12,4 +12,6 @@ COPY target/*.jar ${APP_ROOT}/qrcode-spring.jar
 #COPY config ${APP_ROOT}/config/
 
 #ENTRYPOINT ["java", "$JAR_OPTS", "-jar", "qrcode-spring.jar", "--server.port=$PORT"]
-CMD ["java", "-Djava.security.egd=file:/dev/./urandom","-jar","qrcode-spring.jar", ">", "/dev/stdout", "2>&1"]
+#CMD ["java", "-Djava.security.egd=file:/dev/./urandom","-jar","qrcode-spring.jar", ">", "/dev/stdout", "2>&1"]
+# Fire up our Spring Boot app by default
+CMD [ "sh", "-c", "java $JAR_OPTS -Dserver.port=$PORT  -Djava.security.egd=file:/dev/./urandom -jar qrcode-spring.jar" ]
