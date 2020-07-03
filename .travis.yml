@@ -28,7 +28,7 @@ jobs:
         - docker push registry.heroku.com/qrcode-spring/web
 
         # Release Dockerized Native Spring Boot App on Heroku
-        - ./heroku-release.sh qrcode-spring
+        - - chmod +x heroku-release.sh && ./heroku-release.sh qrcode-spring
 
         # Push to Docker Hub also, since automatic Builds there don't have anough RAM to do a docker build
         - echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
