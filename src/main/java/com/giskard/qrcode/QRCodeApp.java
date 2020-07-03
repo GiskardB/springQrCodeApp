@@ -25,7 +25,7 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
 
 @Controller
 @EnableCaching
-@SpringBootApplication
+@SpringBootApplication(proxyBeanMethods = false)
 @CrossOrigin(methods = {RequestMethod.GET})
 public class QRCodeApp {
 
