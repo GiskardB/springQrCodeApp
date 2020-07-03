@@ -1,36 +1,19 @@
-# use minimal Travis build image so that we could install our own JDK (Graal) and Maven
-# use newest available minimal distro - see https://docs.travis-ci.com/user/languages/minimal-and-generic/
-dist: bionic
-language: minimal
-
+language: java
+jdk:
+  - openjdk8
 services:
   - docker
-
+  -
 jobs:
   include:
     - script:
-        # Install GraalVM with SDKMAN
-        - curl -s "https://get.sdkman.io" | bash
-        - source "$HOME/.sdkman/bin/sdkman-init.sh"
-        - sdk install java 20.1.0.r11-grl
-
-        # Check if GraalVM was installed successfully
+        # Show Java version
         - java -version
 
-        # Install Maven, that uses GraalVM for later builds
-        - sdk install maven
-
-        # Show Maven using GraalVM JDK
+        # Show Maven version
         - mvn --version
 
-        # Install GraalVM Native Image
-        - gu install native-image
-
-        # Check if Native Image was installed properly
-        - native-image --version
-
-        # Run GraalVM Native Image compilation of Spring Boot App (Maven version instead of ./compile.sh)
-        - mvn -Pnative clean package
+        - mvn clean install
 
       name: "Native Image compile on Travis Host"
 

@@ -12,11 +12,6 @@
 
 
 	<properties>
-		<!-- Useful only for GraalVM Compile -->
-		<java.version>8</java.version>
-		<start-class>com.giskard.qrcode.QRCodeApp</start-class>
-		<spring-graalvm-native.version>0.7.1</spring-graalvm-native.version>
-
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -65,23 +60,6 @@
 			<version>3.3.3</version>
 		</dependency>
 
-		<!-- Useful only for GraalVM Compile -->
-		<dependency>
-			<groupId>org.springframework.experimental</groupId>
-			<artifactId>spring-graalvm-native</artifactId>
-			<version>${spring-graalvm-native.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-indexer</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -111,56 +89,5 @@
 		</plugins>
 	</build>
 
-	<profiles>
-		<profile>
-			<id>native</id>
-
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.graalvm.nativeimage</groupId>
-						<artifactId>native-image-maven-plugin</artifactId>
-						<version>20.1.0</version>
-						<configuration>
-							<buildArgs>-J-Xmx4G -H:+TraceClassInitialization -H:+ReportExceptionStackTraces
-								-Dspring.graal.remove-unused-autoconfig=true -Dspring.graal.remove-yaml-support=true
-								--initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger
-								--initialize-at-run-time=org.springframework.boot.validation.MessageInterpolatorFactory
-								--initialize-at-build-time=com.github.jaiimageio.impl.common.PackageUtil
-							</buildArgs>
-							<imageName>${project.artifactId}</imageName>
-						</configuration>
-						<executions>
-							<execution>
-								<goals>
-									<goal>native-image</goal>
-								</goals>
-								<phase>package</phase>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-maven-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
-	<repositories>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-		</pluginRepository>
-	</pluginRepositories>
 
 </project>
