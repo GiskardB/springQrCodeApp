@@ -124,6 +124,9 @@
 						<configuration>
 							<buildArgs>-J-Xmx4G -H:+TraceClassInitialization -H:+ReportExceptionStackTraces
 								-Dspring.graal.remove-unused-autoconfig=true -Dspring.graal.remove-yaml-support=true
+								--initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger
+								--initialize-at-run-time=org.springframework.boot.validation.MessageInterpolatorFactory
+								--initialize-at-build-time=com.github.jaiimageio.impl.common.PackageUtil
 							</buildArgs>
 							<imageName>${project.artifactId}</imageName>
 						</configuration>

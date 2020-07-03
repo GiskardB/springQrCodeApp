@@ -50,4 +50,7 @@ time native-image \
   -H:+ReportExceptionStackTraces \
   -Dspring.graal.remove-unused-autoconfig=true \
   -Dspring.graal.remove-yaml-support=true \
+  --initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger \
+  --initialize-at-run-time=org.springframework.boot.validation.MessageInterpolatorFactory \
+  --initialize-at-build-time=com.github.jaiimageio.impl.common.PackageUtil \
   -cp $CP $MAINCLASS;
