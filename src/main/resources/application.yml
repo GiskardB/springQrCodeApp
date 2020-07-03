@@ -1,3 +1,5 @@
+spring:
+  port: ${PORT}
 qrcode:
   logo:
     enabled: true
