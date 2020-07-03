@@ -1,7 +1,7 @@
 qrcode:
   logo:
     enabled: true
-    path: "classpath:logo.jpg"
+    path: "classpath:/logo.jpg"
     size: 50
     transparency: 1.0f
   margin: 1

@@ -153,7 +153,7 @@ public class QRCodeService implements InitializingBean {
                     || path.startsWith("https://")) {
                 bufferedImage = ImageIO.read(new URL(path).openStream());
             } else if (path.startsWith("classpath:")) {
-                bufferedImage = ImageIO.read(ClassLoader.getSystemResource(path.replace("classpath:", "")));
+                bufferedImage = ImageIO.read(getClass().getResource(path.replace("classpath:", "")));
             } else {
                 bufferedImage = ImageIO.read(new File(path));
             }
