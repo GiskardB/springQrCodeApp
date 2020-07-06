@@ -12,6 +12,9 @@
 Example of Application to generate QRCode with Spring Boot WebFlux deployed on Heroku with Travis
 It will help you go through the modernist deployment with some simple usage of Docker and Travis CI.
 
+[QRCode Demo on Heroku](https://qrcode-spring.herokuapp.com/)
+
+
 # Dependencies
 install the following stuff before you start
 - Java SDK (oraclejdk8/openjdk8)

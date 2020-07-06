@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Log4j2
@@ -38,11 +39,10 @@ public class QRCodeService {
     @Autowired
     CacheManager cacheManager;
 
-    public Mono<byte[]> generateQRCode(String text, int width, int height) {
-
+    public Mono<byte[]> generateQRCode(String text) {
         Assert.hasText(text, "text must not be empty");
 
-        QrCodeBuilderParams params = QrCodeBuilderParams.builder()
+        return generateQRCode(QrCodeBuilderParams.builder()
                 .qrCodeText(text)
                 .qrCodeMargin(this.commonConfig.getQrCodeMargin())
                 .qrCodeSize(this.commonConfig.getQrCodeSize())
@@ -51,23 +51,29 @@ public class QRCodeService {
                 .qrCodeLogoEnabled(this.commonConfig.isQrCodeLogoEnabled())
                 .qrCodeLogoPath(this.commonConfig.getQrCodeLogoPath())
                 .qrCodeLogoSize(this.commonConfig.getQrCodeLogoSize())
-                .qrCodeLogoTransparency(this.commonConfig.getQrCodeLogoTransparency()).build();
+                .qrCodeLogoTransparency(this.commonConfig.getQrCodeLogoTransparency()).build());
+    }
 
-        String key = buildKey(text, width, height);
+    public Mono<byte[]> generateQRCode(QrCodeBuilderParams params) {
+        Assert.notNull(params, "text must not be empty");
 
         return Mono.create(sink -> {
             try {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                //Build Cache Key
+                String key = buildCacheKey(params);
+
+                byte[] qrCodeBytes;
+
                 Cache.ValueWrapper cacheByte = this.cacheManager.getCache(CommonConfig.QR_CODE_CACHE).get(key);
                 if (cacheByte != null) {
                     log.debug("GetQRCode from Cache");
-                    baos.write((byte[]) cacheByte.get());
+                    qrCodeBytes = (byte[]) cacheByte.get();
                 } else {
                     log.info("Generate QrCode");
-                    baos = this.buildQrCode(params);
-                    this.cacheManager.getCache(CommonConfig.QR_CODE_CACHE).put(key, baos.toByteArray());
+                    qrCodeBytes = this.buildQrCode(params);
+                    this.cacheManager.getCache(CommonConfig.QR_CODE_CACHE).put(key, qrCodeBytes);
                 }
-                sink.success(baos.toByteArray());
+                sink.success(qrCodeBytes);
             } catch (Exception ex) {
                 log.error("Error", ex);
                 sink.error(ex);
@@ -75,12 +81,11 @@ public class QRCodeService {
         });
     }
 
-    private String buildKey(String text, int width, int height) {
-        return text + "" + width + "" + height;
+    private String buildCacheKey(QrCodeBuilderParams params) {
+        return params.getQrCodeText() + "" + params.getQrCodeLogoSize();
     }
 
-
-    private ByteArrayOutputStream buildQrCode(QrCodeBuilderParams params) {
+    private byte[] buildQrCode(QrCodeBuilderParams params) throws IOException, WriterException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
@@ -92,18 +97,16 @@ public class QRCodeService {
 
             // Load QR image
             BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix, config);
-            BufferedImage finalQrCode = qrImage;
-            if (params.isQrCodeLogoEnabled()) {
-                finalQrCode = addLogo(params, qrImage);
-            }
+            BufferedImage finalQrCode = params.isQrCodeLogoEnabled() ? addLogo(params, qrImage) : qrImage;
 
             // Write final image as PNG to OutputStream
             ImageIO.write(finalQrCode, "png", baos);
 
         } catch (WriterException | IOException e) {
             log.error("Error", e);
+            throw e;
         }
-        return baos;
+        return baos.toByteArray();
     }
 
     private Map<EncodeHintType, ?> buildHints(QrCodeBuilderParams params) {
@@ -114,33 +117,37 @@ public class QRCodeService {
     }
 
     private BufferedImage addLogo(QrCodeBuilderParams params, BufferedImage qrImage) throws IOException {
-        BufferedImage logoImage = readImage(params.getQrCodeLogoPath());
+        Optional<BufferedImage> bufferedImage = readImage(params.getQrCodeLogoPath());
 
-        // Initialize combined image
-        BufferedImage combined = new BufferedImage(params.getQrCodeSize(), params.getQrCodeSize(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = (Graphics2D) combined.getGraphics();
+        if (bufferedImage.isPresent()) {
+            BufferedImage logoImage = bufferedImage.get();
+            // Initialize combined image
+            BufferedImage combined = new BufferedImage(params.getQrCodeSize(), params.getQrCodeSize(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = (Graphics2D) combined.getGraphics();
 
-        // Write QR code to new image at position 0/0
-        g.drawImage(qrImage, 0, 0, null);
+            // Write QR code to new image at position 0/0
+            g.drawImage(qrImage, 0, 0, null);
 
-        Image scaledInstance = logoImage.getScaledInstance(params.getQrCodeLogoSize(), params.getQrCodeLogoSize(), Image.SCALE_SMOOTH);
-        // Calculate the delta height and width between QR code and logo
-        int deltaHeight = qrImage.getHeight() - scaledInstance.getHeight(null);
-        int deltaWidth = qrImage.getWidth() - scaledInstance.getWidth(null);
-        g.drawImage(scaledInstance,
-                Math.round(deltaWidth / 2f), Math.round(deltaHeight / 2f),
-                new Color(0, 0, 0), null);
-        return combined;
+            Image scaledInstance = logoImage.getScaledInstance(params.getQrCodeLogoSize(), params.getQrCodeLogoSize(), Image.SCALE_SMOOTH);
+            // Calculate the delta height and width between QR code and logo
+            int deltaHeight = qrImage.getHeight() - scaledInstance.getHeight(null);
+            int deltaWidth = qrImage.getWidth() - scaledInstance.getWidth(null);
+            g.drawImage(scaledInstance,
+                    Math.round(deltaWidth / 2f), Math.round(deltaHeight / 2f),
+                    new Color(0, 0, 0), null);
+            return combined;
+        } else {
+            throw new NullPointerException("Logo image doesn't exist!");
+        }
     }
 
-
-    private BufferedImage readImage(String path) throws IOException {
+    private Optional<BufferedImage> readImage(String path) throws IOException {
 
         Cache.ValueWrapper cacheLogo = this.cacheManager.getCache(CommonConfig.LOGO_CACHE).get(path);
 
         if (cacheLogo != null) {
             log.debug("Get Logo from Cache");
-            return (BufferedImage) cacheLogo.get();
+            return Optional.of((BufferedImage) cacheLogo.get());
         } else {
             log.info("Read Logo Image");
             BufferedImage bufferedImage;
@@ -156,7 +163,7 @@ public class QRCodeService {
             if (bufferedImage != null) {
                 this.cacheManager.getCache(CommonConfig.LOGO_CACHE).put(path, bufferedImage);
             }
-            return bufferedImage;
+            return Optional.of(bufferedImage);
         }
     }
 }

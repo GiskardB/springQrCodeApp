@@ -40,7 +40,7 @@ public class QRCodeApp {
 
     @GetMapping(value = QRCODE_ENDPOINT, produces = MediaType.IMAGE_PNG_VALUE)
     public Mono<ResponseEntity<byte[]>> getQRCode(@RequestParam(value = "text", required = true) String text) {
-        return imageService.generateQRCode(text, 256, 256).map(imageBuff ->
+        return imageService.generateQRCode(text).map(imageBuff ->
                 ResponseEntity.ok().cacheControl(CacheControl.maxAge(60, TimeUnit.MINUTES)).body(imageBuff)
         );
     }
