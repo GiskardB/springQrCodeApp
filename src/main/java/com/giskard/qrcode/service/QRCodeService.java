@@ -11,12 +11,9 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
@@ -28,13 +25,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 @Service
 @Log4j2
-@CacheConfig(cacheNames = CommonConfig.QR_CODE_CACHE)
-public class QRCodeService implements InitializingBean {
+public class QRCodeService {
 
     @Autowired
     CommonConfig commonConfig;
@@ -72,7 +68,7 @@ public class QRCodeService implements InitializingBean {
                     this.cacheManager.getCache(CommonConfig.QR_CODE_CACHE).put(key, baos.toByteArray());
                 }
                 sink.success(baos.toByteArray());
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 log.error("Error", ex);
                 sink.error(ex);
             }
@@ -111,7 +107,7 @@ public class QRCodeService implements InitializingBean {
     }
 
     private Map<EncodeHintType, ?> buildHints(QrCodeBuilderParams params) {
-        Map<EncodeHintType, Object> hints = new HashMap<>();
+        Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
         hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
         hints.put(EncodeHintType.MARGIN, params.getQrCodeMargin());
         return hints;
@@ -132,13 +128,13 @@ public class QRCodeService implements InitializingBean {
         int deltaHeight = qrImage.getHeight() - scaledInstance.getHeight(null);
         int deltaWidth = qrImage.getWidth() - scaledInstance.getWidth(null);
         g.drawImage(scaledInstance,
-                (int) Math.round(deltaWidth / 2), (int) Math.round(deltaHeight / 2),
+                Math.round(deltaWidth / 2f), Math.round(deltaHeight / 2f),
                 new Color(0, 0, 0), null);
         return combined;
     }
 
-    @Cacheable
-    BufferedImage readImage(String path) throws IOException {
+
+    private BufferedImage readImage(String path) throws IOException {
 
         Cache.ValueWrapper cacheLogo = this.cacheManager.getCache(CommonConfig.LOGO_CACHE).get(path);
 
@@ -162,13 +158,5 @@ public class QRCodeService implements InitializingBean {
             }
             return bufferedImage;
         }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-
-        //TODO: controlli sui parametri
-
-
     }
 }
