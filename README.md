@@ -14,6 +14,8 @@ It will help you go through the modernist deployment with some simple usage of D
 
 [QRCode Demo on Heroku](https://qrcode-spring.herokuapp.com/)
 
+[Load Tests on Loader.io](https://bit.ly/2ZEFZE5)
+
 
 # Dependencies
 install the following stuff before you start

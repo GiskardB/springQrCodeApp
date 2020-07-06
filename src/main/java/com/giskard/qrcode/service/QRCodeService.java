@@ -118,28 +118,22 @@ public class QRCodeService {
 
     private BufferedImage addLogo(QrCodeBuilderParams params, BufferedImage qrImage) throws IOException {
         Optional<BufferedImage> bufferedImage = readImage(params.getQrCodeLogoPath());
+        BufferedImage logoImage = bufferedImage.get();
+        // Initialize combined image
+        BufferedImage combined = new BufferedImage(params.getQrCodeSize(), params.getQrCodeSize(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = (Graphics2D) combined.getGraphics();
 
-        if (bufferedImage != null
-                && bufferedImage.isPresent()) {
-            BufferedImage logoImage = bufferedImage.get();
-            // Initialize combined image
-            BufferedImage combined = new BufferedImage(params.getQrCodeSize(), params.getQrCodeSize(), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = (Graphics2D) combined.getGraphics();
+        // Write QR code to new image at position 0/0
+        g.drawImage(qrImage, 0, 0, null);
 
-            // Write QR code to new image at position 0/0
-            g.drawImage(qrImage, 0, 0, null);
-
-            Image scaledInstance = logoImage.getScaledInstance(params.getQrCodeLogoSize(), params.getQrCodeLogoSize(), Image.SCALE_SMOOTH);
-            // Calculate the delta height and width between QR code and logo
-            int deltaHeight = qrImage.getHeight() - scaledInstance.getHeight(null);
-            int deltaWidth = qrImage.getWidth() - scaledInstance.getWidth(null);
-            g.drawImage(scaledInstance,
-                    Math.round(deltaWidth / 2f), Math.round(deltaHeight / 2f),
-                    new Color(0, 0, 0), null);
-            return combined;
-        } else {
-            throw new NullPointerException("Logo image doesn't exist!");
-        }
+        Image scaledInstance = logoImage.getScaledInstance(params.getQrCodeLogoSize(), params.getQrCodeLogoSize(), Image.SCALE_SMOOTH);
+        // Calculate the delta height and width between QR code and logo
+        int deltaHeight = qrImage.getHeight() - scaledInstance.getHeight(null);
+        int deltaWidth = qrImage.getWidth() - scaledInstance.getWidth(null);
+        g.drawImage(scaledInstance,
+                Math.round(deltaWidth / 2f), Math.round(deltaHeight / 2f),
+                new Color(0, 0, 0), null);
+        return combined;
     }
 
     private Optional<BufferedImage> readImage(String path) throws IOException {
