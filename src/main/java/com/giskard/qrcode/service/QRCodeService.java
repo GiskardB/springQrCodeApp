@@ -119,7 +119,8 @@ public class QRCodeService {
     private BufferedImage addLogo(QrCodeBuilderParams params, BufferedImage qrImage) throws IOException {
         Optional<BufferedImage> bufferedImage = readImage(params.getQrCodeLogoPath());
 
-        if (bufferedImage.isPresent()) {
+        if (bufferedImage != null
+                && bufferedImage.isPresent()) {
             BufferedImage logoImage = bufferedImage.get();
             // Initialize combined image
             BufferedImage combined = new BufferedImage(params.getQrCodeSize(), params.getQrCodeSize(), BufferedImage.TYPE_INT_ARGB);
